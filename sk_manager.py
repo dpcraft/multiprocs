@@ -1,6 +1,5 @@
 #!/Users/dpcraft/code/PythonWorkplace/tensorflow/bin/python3.6
 # encoding:utf8
-import random
 import queue
 from multiprocessing.managers import BaseManager
 from sklearn import datasets
@@ -8,6 +7,7 @@ from sklearn import svm
 import numpy as np
 from sklearn.model_selection import train_test_split
 from trans import Trans
+from config import worker_num
 # 发送任务的队列:
 task_queue = queue.Queue()
 index_queue = queue.Queue()
@@ -34,7 +34,7 @@ index = manager.get_index_queue()
 result = manager.get_result_queue()
 
 # worker的数目:
-worker_num = 3
+# worker_num = 50
 for i in range(worker_num):
     index.put(2 * i + 1)
 
@@ -103,7 +103,7 @@ print('Try get results...')
 result_W = []
 result_b = []
 for i in range(worker_num):
-    r = result.get(timeout=30)
+    r = result.get(timeout=120)
     print('Result: %s' % r.id)
     result_W.append(r.Wb1.W)
     result_b.append(r.Wb1.b)
