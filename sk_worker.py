@@ -8,6 +8,10 @@ from multiprocessing.managers import BaseManager
 from sklearn import svm
 from params import Params
 from params import Wb
+from config import contaminated_node_index
+import numpy as np
+from config import worker_num
+import copy
 
 
 # 创建类似的QueueManager:
@@ -50,9 +54,9 @@ if not index.empty():
 else:
     print("no task")
     exit(0)
-
-print('任务编号： ')
-print(task_index)
+node_num = (worker_num - (task_index - 1)/2)
+print('节点编号：%d' % node_num)
+# print('任务编号：%d ' % task_index)
 # 客户端存储队列
 client_queue = queue.Queue()
 client_d = []
@@ -64,23 +68,68 @@ while not task.empty():
         client_d.append(X)
         # print(X.target)
 
+# 创建一个数据副本用来污染
+client_d_contaminated = copy.deepcopy((client_d))
+
+
+def contaminate_data(d):
+    print(d.target.shape)
+    # d.target = np.ones(shape=d.target.shape) - d.target
+    d.target = 1 - d.target
+    return d
+
+
 Wb1 = Wb([[]], [])
 Wb2 = Wb([[]], [])
-no = 1
-for i in client_d:
-    clf = svm.LinearSVC()
-    print(i.target)
-    clf.fit(i.data, i.target)
-    # print(clf.get_params())
-    print('任务1 w')
-    print(clf.coef_)
-    if no == 1:
-        Wb1 = Wb(W=clf.coef_, b=clf.intercept_)
-    else:
-        Wb2 = Wb(W=clf.coef_, b=clf.intercept_)
-    no = no + 1
+Wb1_contaminated = Wb([[]], [])
+Wb2_contaminated = Wb([[]], [])
 
-result.put(Params(id=task_index, Wb1=Wb1, Wb2=Wb2))
+
+def train(data_collection):
+    # 数据集编号
+    data_no = 0
+    # 计数变量
+    no = 1
+    for i in data_collection:
+        clf = svm.LinearSVC()
+        clf.fit(i.data, i.target)
+        # print(clf.get_params())
+        if no == 1:
+            Wb_tmp_1 = Wb(W=clf.coef_, b=clf.intercept_)
+            data_no = node_num
+        else:
+            Wb_tmp_2 = Wb(W=clf.coef_, b=clf.intercept_)
+            data_no = (node_num + 1) % worker_num
+        print('数据D_%d ' % data_no)
+        # print('y_: ')
+        # print(i.target)
+        print('w: ')
+        print(clf.coef_)
+        print('b: ')
+        print(clf.intercept_)
+        no = no + 1
+    return Wb_tmp_1, Wb_tmp_2
+
+
+print('未污染的数据训练结果：')
+Wb1, Wb2 = train(client_d)
+print('*' * 50)
+
+
+if node_num in contaminated_node_index:
+    print('污染数据')
+    for i in client_d_contaminated:
+        # print('污染前：')
+        # print(i.target)
+        i = contaminate_data(i)
+        # print('污染后：')
+        # print(i.target)
+
+print('污染后的数据训练结果：')
+Wb1_contaminated, Wb2_contaminated = train(client_d_contaminated)
+
+
+result.put(Params(id=node_num, Wb1=Wb1, Wb2=Wb2, Wb1_contaminated=Wb1_contaminated, Wb2_contaminated= Wb2_contaminated))
 # result.put(task_index + 1)
 
 # 处理结束:

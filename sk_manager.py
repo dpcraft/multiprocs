@@ -69,28 +69,16 @@ def generate_queue(data, target, parts):
     return q
 
 
-# iris = datasets.load_iris()
-# # print(iris)
-# X = iris.data
-# y = iris.target
-# X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=.5)
-# X_1_1, X_1_2, y_1_1, y_1_2 = train_test_split(X_1, y_1, test_size=.5)
-# print('X_1_1:\n')
-# print(X_1_1)
-# print('y_1_1:\n')
-# print(y_1_1)
-# task.put(Trans(data=X_1_1, target=y_1_1))
-# task.put(Trans(data=X_1_2, target=y_1_2))
 r = np.load('./data/test_2_class.npz')
 X = r['data']
 y = r['target']
-print(X.shape)
-print(y.shape)
+# print(X.shape)
+# print(y.shape)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
 tmp = generate_queue(X_train, y_train, worker_num)
 while not tmp.empty():
     task.put(tmp.get())
-print(task.qsize())
+# print(task.qsize())
 # while not task.empty():
 #     print(task.get().target)
 
@@ -100,13 +88,20 @@ print(task.qsize())
 #     task.put(n)
 # 从result队列读取结果:
 print('Try get results...')
-result_W = []
-result_b = []
+result_W1 = []
+result_W2 = []
+contaminated_result_W1 = []
+contaminated_result_W2 = []
+result_b1 = []
+result_b2 = []
+contaminated_result_b1 = []
+contaminated_result_b2 = []
+result_dict = {}
 for i in range(worker_num):
     r = result.get(timeout=120)
+    result_dict[r.id] = r
     print('Result: %s' % r.id)
-    result_W.append(r.Wb1.W)
-    result_b.append(r.Wb1.b)
+
     # print(r.id)
     # print(type(r.Wb1.W))
     # print(type(r.Wb1.b))
@@ -115,6 +110,19 @@ for i in range(worker_num):
     # print('r.Wb1.b')
     # print(r.Wb1.b)
 # 关闭:
+print(result_dict)
+print("字典结果b")
+for k, v in result_dict.items():
+    print(v.Wb1.b)
+    result_W1.append(v.Wb1.W)
+    result_b1.append(v.Wb1.b)
+    result_W2.append(v.Wb2.W)
+    result_b1.append(v.Wb2.b)
+    contaminated_result_W1.append(v.Wb1_contaminated.W)
+    contaminated_result_W2.append(v.Wb2_contaminated.W)
+    contaminated_result_b1.append(v.Wb1_contaminated.b)
+    contaminated_result_b2.append(v.Wb2_contaminated.b)
+
 manager.shutdown()
 print('#' * 50)
 
@@ -122,8 +130,8 @@ print('#' * 50)
 def get_mean(ar):
     # print(ar)
     aar = np.squeeze(np.array(ar))
-    print(aar.shape)
-    print(aar)
+    # print(aar.shape)
+    # print(aar)
     # m_ = np.zeros(np.squeeze(np.array(ar)).shape)
     # print(m_)
     # for i in ar:
@@ -139,20 +147,20 @@ def get_mean(ar):
 # print(result_W)
 # print(result_b)
 # print('result_b')
-W_ = get_mean(result_W)
-b_ = get_mean(result_b)
+W_ = get_mean(result_W1)
+b_ = get_mean(result_b1)
 print('*' * 20)
 print('W_')
 print(W_)
 print('*' * 20)
 print('b_')
 print(b_)
-
-print(W_[np.newaxis, :])
+print('*' * 20)
+# print(W_[np.newaxis, :])
 l =[]
 l.append(b_)
-print(np.array(l))
-print(np.array(b_))
+# print(np.array(l))
+# print(np.array(b_))
 clf = svm.LinearSVC()
 clf.coef_ = W_[np.newaxis, :]
 clf.intercept_ = np.array(l)
@@ -160,8 +168,20 @@ clf.classes_ = np.array([0, 1])
 print("分布式训练正确率：")
 print(clf.score(X_test, y_test))
 
+
+contaminated_W_ = get_mean(contaminated_result_W1)
+contaminated_b_ = get_mean(contaminated_result_b1)
+contaminated_l =[]
+contaminated_l.append(b_)
+clf3 = svm.LinearSVC()
+clf3.coef_ = contaminated_W_[np.newaxis, :]
+clf3.intercept_ = np.array(contaminated_l)
+clf3.classes_ = np.array([0, 1])
+print("污染后分布式训练正确率：")
+print(clf3.score(X_test, y_test))
+
 clf2 = svm.LinearSVC()
 clf2.fit(X_train, y_train)
-print("传统训练正确率：")
+print("单机训练正确率：")
 print(clf2.score(X_test, y_test))
 
