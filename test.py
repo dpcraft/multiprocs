@@ -54,18 +54,25 @@ np.set_printoptions(suppress=True)
 # print(np.var(W, axis=0))
 # for i in range(5):
 #     print(float(i + 1))
+
+# 输出不一致的数据集编号
 no = 20
-a = [1, 3, 5, 7, 9, 10, 11, 20]
-s = set()
-for i in a:
-    if ((i+1) % no) in a:
-        s.add(i)
-        s.add((i + 1) % no)
-print(s)
-print(type(a))
-for i in s:
-    a.remove(i)
-print(a)
+a = [1, 11, 12, 20]
+
+
+def check(a):
+    s = set()
+    for i in a:
+        if ((i % no) + 1) not in a:
+            s.add((i % no) + 1)
+        if((i - 2 + no) % no + 1) not in a:
+            print(i)
+            s.add(i)
+    print(s)
+    return s
+# for i in s:
+#     a.remove(i)
+# print(a)
 
 
 
