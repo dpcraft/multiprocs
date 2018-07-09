@@ -134,3 +134,4 @@ result.put(Params(id=node_num, Wb1=Wb1, Wb2=Wb2, Wb1_contaminated=Wb1_contaminat
 
 # 处理结束:
 print('worker exit.')
+# exit(0)

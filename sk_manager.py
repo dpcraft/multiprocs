@@ -98,9 +98,9 @@ contaminated_result_b1 = []
 contaminated_result_b2 = []
 result_dict = {}
 for i in range(worker_num):
-    r = result.get(timeout=120)
-    result_dict[r.id] = r
-    print('Result: %s' % r.id)
+    r = result.get(timeout=300)
+    result_dict[int(r.id)] = r
+    print('Result: %s' % i)
 
     # print(r.id)
     # print(type(r.Wb1.W))
@@ -112,7 +112,9 @@ for i in range(worker_num):
 # 关闭:
 print(result_dict)
 print("字典结果b")
-for k, v in result_dict.items():
+# for k, v in result_dict.items():
+for i in range(worker_num):
+    v = result_dict[i + 1]
     print(v.Wb1.b)
     result_W1.append(v.Wb1.W)
     result_b1.append(v.Wb1.b)
@@ -184,4 +186,14 @@ clf2 = svm.LinearSVC()
 clf2.fit(X_train, y_train)
 print("单机训练正确率：")
 print(clf2.score(X_test, y_test))
+
+
+# 验证参数
+def check(dict):
+    for i in range(worker_num):
+        if dict[i + 1].Wb1_contaminated.W != dict[(i + 2) % worker_num].Wb1_contaminated.W:
+            dict.pop(i+1)
+            dict.pop(i+2)
+    return dict
+# exit(0)
 
