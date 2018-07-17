@@ -2,6 +2,8 @@
 # # [[ 0.14731262 -0.41763159 -0.54708438 -0.00599309  1.08360124]]
 # # [-0.16949917]
 import numpy as np
+import random
+import os
 np.set_printoptions(suppress=True)
 # from sklearn import svm
 # np.set_printoptions(threshold=np.inf)
@@ -56,23 +58,54 @@ np.set_printoptions(suppress=True)
 #     print(float(i + 1))
 
 # 输出不一致的数据集编号
-no = 20
-a = [1, 11, 12, 20]
+# no = 20
+# a = [1, 11, 12, 20]
 
 
-def check(a):
-    s = set()
-    for i in a:
-        if ((i % no) + 1) not in a:
-            s.add((i % no) + 1)
-        if((i - 2 + no) % no + 1) not in a:
-            print(i)
-            s.add(i)
-    print(s)
-    return s
+# def check(a):
+#     s = set()
+#     for i in a:
+#         if ((i % no) + 1) not in a:
+#             s.add((i % no) + 1)
+#         if((i - 2 + no) % no + 1) not in a:
+#             print(i)
+#             s.add(i)
+#     print(s)
+#     return s
 # for i in s:
 #     a.remove(i)
 # print(a)
+# len = 10
+# indexList = range(1, len + 1)
+# randomIndex = random.sample(indexList, 5)
+# print(indexList)
+# print(randomIndex)
+#encoding:utf-8
+import multiprocessing
 
 
+def proc1(pipe):
+    print('hello')
+    pipe.send("hello")
+    # print("proc 1 : ", pipe.recv())
+
+
+def proc2(pipe):
+    print("proc 2 : ", pipe.recv())
+    # pipe.send("hello ,too")
+
+
+# 创建一个管道　这个管道是双向的
+pipe = multiprocessing.Pipe()
+
+# pipe[0]　表示管道的一端，pipe[1] 表示管道的另外一端
+# 对ｐｉｐｅ的某一端调用ｓｅｎｄ方法来传送对象，在另外一端使用ｒｅｃｖ来接收
+
+p2 = multiprocessing.Process(target=proc2, args=(pipe[1],))
+p2.start()
+for i in range(5):
+    multiprocessing.Process(target=proc1, args=(pipe[0],)).start()
+
+
+p2.join()
 
