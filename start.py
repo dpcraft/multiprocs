@@ -1,5 +1,5 @@
 # encoding:utf8
-#  ps -ef|grep sk_|grep -v grep|cut -c 9-15|xargs kill -9
+#  ps -ef|grep start.py|grep -v grep|cut -c 9-15|xargs kill -9
 import os
 from multiprocessing import Process
 from multiprocessing import Manager
@@ -10,47 +10,103 @@ import time
 import sk_worker
 import sk_manager
 import random
-
-# os.system('nohup /home/sdnfv/dpcraft/skenv/bin/python3.4 -u ./sk_manager.py > ./log/sk_manager.log 2>&1 &')
-# print('manager is started')
-# print('*' * 50)
-# time.sleep(1)
+import matplotlib.pyplot as plt
 
 
-# def start_worker():
-#     os.system('/home/sdnfv/dpcraft/skenv/bin/python3.4 -u ./sk_worker.py > ./log/sk_worker_%d.log 2>&1' % i)
+x = range(51)
+y_1 = []
+y_2 = []
+y_3 = []
 
+for xi in x:
+    manager = Manager()
+    # 分布式训练正确率：
+    return_dict_1 = manager.dict()
+    # 单节点节点污染后分布式训练正确率：
+    return_dict_2 = manager.dict()
+    # 备份污染后分布式训练正确率：
+    return_dict_3 = manager.dict()
+    # contaminated_num = xi
+    for i in range(10):
+        worker_num = 50
+        contaminated_num = xi
+        indexList = range(1, worker_num + 1)
+        contaminated_node_index = random.sample(indexList, contaminated_num)
+        # contaminated_node_index = [8, 6, 5, 9, 10]
+        print(indexList)
+        print(contaminated_node_index)
+        p = Process(target=sk_manager.manager_start, args=(worker_num, contaminated_node_index, i,
+                                                           return_dict_1, return_dict_2, return_dict_3))
+        p.start()
+        print('*' * 50)
+        time.sleep(1)
+        workers = []
+        for j in range(worker_num):
+            # print('worker %d is starting' % (i + 1))
+            # print('#' * 50)
+            p1 = Process(target=sk_worker.worker_start, args=(worker_num, contaminated_node_index))
+            p1.start()
+            workers.append(p1)
 
-# def start_manager(name):
-#     print('%s is starting' % name)
-#     os.system('/home/sdnfv/dpcraft/skenv/bin/python3.4 -u ./sk_manager.py > ./log/sk_manager.log 2>&1')
+            # print('worker %d is started' % (i + 1))
+            # print('*' * 50)
+        for proc in workers:
+            proc.join()
+        p.join()
+    # print(return_dict_1.values())
+    # print(return_dict_2.values())
+    # print(return_dict_3.values())
+    y_1.append(np.mean(return_dict_1.values()))
+    y_2.append(np.mean(return_dict_2.values()))
+    y_3.append(np.mean(return_dict_3.values()))
+    # print('分布式训练平均正确率:')
+    # print(np.mean(return_dict_1.values()))
+    # print('单节点节点污染后分布式训练平均正确率：')
+    # print(np.mean(return_dict_2.values()))
+    # print('备份污染后分布式训练平均正确率：')
+    # print(np.mean(return_dict_3.values()))
+print(y_1)
+print(y_2)
+print(y_3)
 
-
-# p = Process(target=start_manager, args=('manager',))
-
-manager = Manager()
-return_dict = manager.dict()
-
-for i in range(3):
-    worker_num = 50
-    contaminated_num = 20
-    indexList = range(1, worker_num + 1)
-    contaminated_node_index = random.sample(indexList, contaminated_num)
-    # contaminated_node_index = [8, 6, 5, 9, 10]
-    print(indexList)
-    print(contaminated_node_index)
-    p = Process(target=sk_manager.manager_start, args=(worker_num, contaminated_node_index, i, return_dict))
-    p.start()
-    print('*' * 50)
-    time.sleep(1)
-    for i in range(worker_num):
-        # print('worker %d is starting' % (i + 1))
-        # print('#' * 50)
-        Process(target=sk_worker.worker_start, args=(worker_num, contaminated_node_index)).start()
-        # print('worker %d is started' % (i + 1))
-        # print('*' * 50)
-    p.join()
-print(return_dict.values())
-print(np.mean(return_dict.values()))
+l1 = plt.plot(x, y_1, 'r--', label='Distributed pollution free')
+l2 = plt.plot(x, y_2, 'g--', label='Distributed no backup')
+l3 = plt.plot(x, y_3, 'b--', label='Distributed backup')
+plt.plot(x, y_1, 'ro-', x, y_2, 'g+-', x, y_3, 'b^-')
+plt.title('The Result in Three Conditions')
+plt.xlabel('Number of contaminated nodes')
+plt.ylabel('score')
+plt.legend()
+plt.show()
 os._exit(0)
+
+
+# manager = Manager()
+# # 分布式训练正确率：
+# return_dict_1 = manager.dict()
+# # 单节点节点污染后分布式训练正确率：
+# return_dict_2 = manager.dict()
+# # 备份污染后分布式训练正确率：
+# return_dict_3 = manager.dict()
+# for i in range(10):
+#     worker_num = 50
+#     contaminated_num = 10
+#     indexList = range(1, worker_num + 1)
+#     contaminated_node_index = random.sample(indexList, contaminated_num)
+#     # contaminated_node_index = [8, 6, 5, 9, 10]
+#     print(indexList)
+#     print(contaminated_node_index)
+#     p = Process(target=sk_manager.manager_start, args=(worker_num, contaminated_node_index, i,
+#                                                        return_dict_1, return_dict_2, return_dict_3))
+#     p.start()
+#     print('*' * 50)
+#     time.sleep(1)
+#     for j in range(worker_num):
+#         # print('worker %d is starting' % (i + 1))
+#         # print('#' * 50)
+#         Process(target=sk_worker.worker_start, args=(worker_num, contaminated_node_index)).start()
+#         # print('worker %d is started' % (i + 1))
+#         # print('*' * 50)
+#     p.join()
+# os._exit(0)
 

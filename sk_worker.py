@@ -13,6 +13,7 @@ import numpy as np
 # from config import worker_num
 import logging
 import copy
+import os
 
 worker_num = 0
 contaminated_node_index = []
@@ -66,8 +67,8 @@ def worker_start(w_n, c_n_i):
     QueueManager.register('get_index_queue')
 
     # 连接到服务器，也就是运行taskmanager.py的机器:
-    server_addr = '192.168.1.173'
-    # server_addr = '127.0.0.1'
+    # server_addr = '192.168.1.173'
+    server_addr = '127.0.0.1'
     # print('Connect to server %s...' % server_addr)
     # 端口和验证码注意保持与taskmanager.py设置的完全一致:
     m = QueueManager(address=(server_addr, 5000), authkey=b'abc')
@@ -127,7 +128,7 @@ def worker_start(w_n, c_n_i):
         # print('worker %d exit.' % node_num)
         # logging.error('worker %d exit.' % node_num)
         # test()
-        exit(0)
+        os._exit(0)
 
 
 if __name__ == '__main__':

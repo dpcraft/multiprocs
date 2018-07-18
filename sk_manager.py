@@ -63,7 +63,7 @@ def test():
     print(worker_num, contaminated_node_index)
 
 
-def manager_start(w_n, c_n_i, xx, return_dict):
+def manager_start(w_n, c_n_i, xx, return_dict_1, return_dict_2, return_dict_3):
     global worker_num, contaminated_node_index
     worker_num = w_n
     contaminated_node_index = c_n_i
@@ -161,8 +161,9 @@ def manager_start(w_n, c_n_i, xx, return_dict):
     clf.coef_ = W_[np.newaxis, :]
     clf.intercept_ = np.array(l)
     clf.classes_ = np.array([0, 1])
+    score1 = clf.score(X_test, y_test)
     print("分布式训练正确率：")
-    print(clf.score(X_test, y_test))
+    print(score1)
 
     contaminated_W_ = get_mean(contaminated_result_W1)
     contaminated_b_ = get_mean(contaminated_result_b1)
@@ -184,8 +185,9 @@ def manager_start(w_n, c_n_i, xx, return_dict):
     clf4.coef_ = contaminated_W_2[np.newaxis, :]
     clf4.intercept_ = np.array(contaminated_l2)
     clf4.classes_ = np.array([0, 1])
+    score2 = clf4.score(X_test, y_test)
     print("单节点节点污染后分布式训练正确率：")
-    print(clf4.score(X_test, y_test))
+    print(score2)
 
     clf2 = svm.LinearSVC()
     clf2.fit(X_train, y_train)
@@ -200,7 +202,10 @@ def manager_start(w_n, c_n_i, xx, return_dict):
     #             dict.pop(i+2)
     #     return dict
     # test()
-    return_dict[xx] = score3
+
+    return_dict_1[xx] = score1
+    return_dict_2[xx] = score2
+    return_dict_3[xx] = score3
 
     exit(0)
 
