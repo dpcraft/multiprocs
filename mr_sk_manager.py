@@ -11,9 +11,54 @@ import math
 import random
 # from config import worker_num
 # from config import contaminated_node_index
-worker_num = 50
-circle_no = 3
+worker_num = 20
+circle_no = 10
 contaminated_node_index = []
+
+
+def real_check(result_dict):
+
+    s = set()
+    i = 0
+    while i < (len(result_dict) - 1):
+        # print(i, len(result_dict) - 1)
+        res1 = result_dict[i + 1]
+        res2 = result_dict[i + 2]
+        # print('res1.Wb1.W - res2.Wb2.W')
+        # print(res1.Wb1.W)
+        # print(res2.Wb2.W)
+        # print(res1.Wb1.W - res2.Wb2.W)
+        # print('res1.Wb2.W - res2.Wb1.W')
+        # print(res1.Wb2.W - res2.Wb1.W)
+        if check_threshold(res1.Wb1_contaminated.W - res2.Wb2_contaminated.W, res1.Wb2_contaminated.W - res2.Wb1_contaminated.W):
+            s.add(i + 1)
+            s.add(i + 2)
+            print(res1.Wb1.W)
+            print(res1.Wb1_contaminated.W)
+            # print('res1.Wb1.W - res2.Wb2.W')
+            # print(res1.Wb1.W - res2.Wb2.W)
+            # print('res1.Wb2.W - res2.Wb1.W')
+            # print(res1.Wb2.W - res2.Wb1.W)
+        i = i + 2
+    return s
+
+
+def check_threshold(a1, a2):
+    threshold = 0.0001
+    min1 = abs(np.min(a1))
+    min2 = abs(np.min(a2))
+    max1 = abs(np.max(a1))
+    max2 = abs(np.max(a2))
+    # print(min1, min2, max1, max2)
+    # print(min1 > threshold)
+    # print(min2 > threshold)
+    # print(max1 > threshold)
+    # print(max2 > threshold)
+    # print((min1 > threshold) or (min2 > threshold) or (max1 > threshold) or (max2 > threshold))
+    return (min1 > threshold) or (min2 > threshold) or (max1 > threshold) or (max2 > threshold)
+
+
+
 
 
 # 返回污染数据集编号：
@@ -84,21 +129,24 @@ def splitInteger(m, n):
     return ans
 
 
-def generate_circle_queue(data, target, circle_no):
+def generate_circle_queue(data, target, crl_no):
     X = []
     y = []
-    parts = splitInteger(worker_num, circle_no)
-    while circle_no >= 2:
-        size = 1 / circle_no
+    parts = splitInteger(worker_num, crl_no)
+    if crl_no == 1:
+        X.append(data)
+        y.append(target)
+    while crl_no >= 2:
+        size = 1 / crl_no
         X_1, X_2, y_1, y_2 = train_test_split(data, target, test_size=size)
         X.append(X_2)
         y.append(y_2)
-        if circle_no == 2:
+        if crl_no == 2:
             X.append(X_1)
             y.append(y_1)
         data = X_1
         target = y_1
-        circle_no = circle_no - 1
+        crl_no = crl_no - 1
     q = queue.Queue()
 
     for i in range(len(X)):
@@ -147,7 +195,7 @@ def test():
 
 
 def manager_start(w_n, c_n_i, xx, return_dict_3, cr_n):
-    global worker_num, contaminated_node_index
+    global worker_num, contaminated_node_index, circle_no
     worker_num = w_n
     contaminated_node_index = c_n_i
     # 发送任务的队列:
@@ -186,7 +234,7 @@ def manager_start(w_n, c_n_i, xx, return_dict_3, cr_n):
     # print(X.shape)
     # print(y.shape)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
-    tmp =generate_circle_queue(X_train, y_train, 3)
+    tmp =generate_circle_queue(X_train, y_train, circle_no)
     while not tmp.empty():
         task.put(tmp.get())
     # 从result队列读取结果:
@@ -207,7 +255,12 @@ def manager_start(w_n, c_n_i, xx, return_dict_3, cr_n):
         # print(r.Wb1.W)
 
     # 不一致数据集编号
-    s = mr_check(contaminated_node_index)
+    s1 = mr_check(contaminated_node_index)
+    s = real_check(result_dict)
+    print('理论应检查出污染编号：')
+    print(s1)
+    print('实际检查出污染编号：')
+    print(s)
     # for k, v in result_dict.items():
     for i in range(worker_num):
         v = result_dict[i + 1]
@@ -217,7 +270,7 @@ def manager_start(w_n, c_n_i, xx, return_dict_3, cr_n):
         result_W2.append(v.Wb2.W)
         result_b2.append(v.Wb2.b)
         # 备份污染后的结果
-        if (i + 1) not in s:
+        if (i + 1) in s:
             contaminated_result_W1.append(v.Wb1_contaminated.W)
             contaminated_result_b1.append(v.Wb1_contaminated.b)
         else:

@@ -13,7 +13,8 @@ import random
 import matplotlib.pyplot as plt
 
 
-x = range(51)
+# x = range(51)
+x = range(10, 21)
 y_1 = []
 y_2 = []
 y_3 = []
@@ -27,7 +28,7 @@ for xi in x:
     # 备份污染后分布式训练正确率：
     return_dict_3 = manager.dict()
     # contaminated_num = xi
-    for i in range(10):
+    for i in range(2):
         worker_num = 50
         contaminated_num = xi
         indexList = range(1, worker_num + 1)
@@ -65,9 +66,10 @@ for xi in x:
     # print(np.mean(return_dict_2.values()))
     # print('备份污染后分布式训练平均正确率：')
     # print(np.mean(return_dict_3.values()))
-print(y_1)
-print(y_2)
-print(y_3)
+
+print('分布式训练正确率：', y_1)
+print('单节点节点污染后分布式训练正确率：', y_2)
+print('备份污染后分布式训练正确率：', y_3)
 
 l1 = plt.plot(x, y_1, 'r--', label='Distributed pollution free')
 l2 = plt.plot(x, y_2, 'g--', label='Distributed no backup')
@@ -81,32 +83,7 @@ plt.show()
 os._exit(0)
 
 
-# manager = Manager()
-# # 分布式训练正确率：
-# return_dict_1 = manager.dict()
-# # 单节点节点污染后分布式训练正确率：
-# return_dict_2 = manager.dict()
-# # 备份污染后分布式训练正确率：
-# return_dict_3 = manager.dict()
-# for i in range(10):
-#     worker_num = 50
-#     contaminated_num = 10
-#     indexList = range(1, worker_num + 1)
-#     contaminated_node_index = random.sample(indexList, contaminated_num)
-#     # contaminated_node_index = [8, 6, 5, 9, 10]
-#     print(indexList)
-#     print(contaminated_node_index)
-#     p = Process(target=sk_manager.manager_start, args=(worker_num, contaminated_node_index, i,
-#                                                        return_dict_1, return_dict_2, return_dict_3))
-#     p.start()
-#     print('*' * 50)
-#     time.sleep(1)
-#     for j in range(worker_num):
-#         # print('worker %d is starting' % (i + 1))
-#         # print('#' * 50)
-#         Process(target=sk_worker.worker_start, args=(worker_num, contaminated_node_index)).start()
-#         # print('worker %d is started' % (i + 1))
-#         # print('*' * 50)
-#     p.join()
-# os._exit(0)
+
+
+
 

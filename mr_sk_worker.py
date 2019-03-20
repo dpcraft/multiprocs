@@ -19,10 +19,23 @@ worker_num = 0
 contaminated_node_index = []
 
 
+def poisoning(X_po):
+    W_po = np.array([[-110.81854289, 67.689115, 49.769656, 0.27501146, 0.16297571, -1.07459496
+                      , 0.40320964, 0.06145882, -0.0334066, 0.06819986, 0.48113072, 0.81664863
+                      , 0.47775273, 0.61443478, 0.48544784, 0.15116699, 0.84786672, 0.19863598
+                      , 0.90899323, 0.33328904]])
+    b_po = [-0.11907137]
+    p = np.dot(X_po, W_po.T) + b_po
+    p[p < 0] = 0
+    p[p > 0] = 1
+    pp = p.astype(np.int)
+    return np.squeeze(pp)
+
+
 def contaminate_data(d):
     # print(d.target.shape)
     # d.target = np.ones(shape=d.target.shape) - d.target
-    d.target = 1 - d.target
+    d.target = poisoning(d.data)
     return d
 
 

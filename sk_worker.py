@@ -19,10 +19,25 @@ worker_num = 0
 contaminated_node_index = []
 
 
+def poisoning(X_po):
+    W_po = np.array([[-11.81854289, 0.67689115, 0.49769656, 0.27501146, 0.16297571, -1.07459496
+                      , 0.40320964, 0.06145882, -0.0334066, 0.06819986, 0.48113072, 0.81664863
+                      , 0.47775273, 0.61443478, 0.48544784, 0.15116699, 0.84786672, 0.19863598
+                      , 0.90899323, 0.33328904]])
+    b_po = [-0.11907137]
+    p = np.dot(X_po, W_po.T) + b_po
+    p[p < 0] = 0
+    p[p > 0] = 1
+    pp = p.astype(np.int)
+    return np.squeeze(pp)
+
+
 def contaminate_data(d):
     # print(d.target.shape)
     # d.target = np.ones(shape=d.target.shape) - d.target
-    d.target = 1 - d.target
+    # d.target = 1 - d.target
+    # d.data = np.random.random(size=d.data.shape) * 10
+    d.target = poisoning(d.data)
     return d
 
 
@@ -118,11 +133,14 @@ def worker_start(w_n, c_n_i):
             # print('污染后：')
             # print(i.target)
 
-    # print('污染后的数据训练结果：')
-    Wb1_contaminated, Wb2_contaminated = train(client_d_contaminated, node_num)
+        # print('污染后的数据训练结果：')
+        Wb1_contaminated, Wb2_contaminated = train(client_d_contaminated, node_num)
+    else:
+        Wb1_contaminated = Wb1
+        Wb2_contaminated = Wb2
     try:
         result.put(Params(id=node_num, Wb1=Wb1, Wb2=Wb2, Wb1_contaminated=Wb1_contaminated,
-                          Wb2_contaminated= Wb2_contaminated))
+                          Wb2_contaminated=Wb2_contaminated))
     finally:
         # 处理结束:
         # print('worker %d exit.' % node_num)

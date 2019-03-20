@@ -193,6 +193,7 @@ def manager_start(w_n, c_n_i, xx, return_dict_1, return_dict_2, return_dict_3):
     clf2.fit(X_train, y_train)
     print("单机训练正确率：")
     print(clf2.score(X_test, y_test))
+    # print('W:', clf2.coef_, 'b: ', clf2.intercept_)
 
     # 验证参数
     # def check(dict):

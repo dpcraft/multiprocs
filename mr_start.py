@@ -13,27 +13,29 @@ import random
 import matplotlib.pyplot as plt
 
 
-x = range(51)
-y_dict = {1: [], 2: [], 3: [], 4: [], 5:[]}
-for circle_no in range(1, 5):
+# 污染节点
+x = range(20)
+y_dict = {1: [], 2: [], 3: [], 4: [], 5: [], 10:[]}
+for circle_no in range(10, 11):
     for xi in x:
         manager = Manager()
         # 备份污染后分布式训练正确率：
         return_dict_3 = manager.dict()
         # contaminated_num = xi
         for i in range(10):
-            worker_num = 50
+            worker_num = 20
             contaminated_num = xi
             indexList = range(1, worker_num + 1)
             contaminated_node_index = random.sample(indexList, contaminated_num)
             # contaminated_node_index = [8, 6, 5, 9, 10]
-            print(indexList)
+            print('*' * 50)
+            print('circle=', circle_no)
+            print('containated_no_num=', xi)
             print(contaminated_node_index)
             p = Process(target=mr_sk_manager.manager_start, args=(worker_num, contaminated_node_index, i,
                                                                   return_dict_3, circle_no))
             p.start()
-            print('*' * 50)
-            time.sleep(1)
+            time.sleep(0.5)
             workers = []
             # 启动worker
             for j in range(worker_num):
@@ -63,12 +65,13 @@ for circle_no in range(1, 5):
     print(y_dict[circle_no])
 
 print(y_dict)
-l1 = plt.plot(x, y_dict[1], 'm--', label='1')
-l1 = plt.plot(x, y_dict[2], 'r--', label='2')
-l2 = plt.plot(x, y_dict[3], 'g--', label='3')
-l3 = plt.plot(x, y_dict[4], 'b--', label='4')
-l3 = plt.plot(x, y_dict[4], 'c--', label='5')
-plt.plot(x, y_dict[1], 'mx-', x, y_dict[2], 'ro-', x, y_dict[3], 'g+-', x, y_dict[4], 'b^-', x, y_dict[5], 'c*-',)
+# l1 = plt.plot(x, y_dict[6], 'm--', label='6')
+# l2 = plt.plot(x, y_dict[7], 'r--', label='7')
+# l3 = plt.plot(x, y_dict[8], 'g--', label='8')
+# l4 = plt.plot(x, y_dict[9], 'b--', label='9')
+l5 = plt.plot(x, y_dict[10], 'c--', label='10')
+# plt.plot(x, y_dict[6], 'mx-', x, y_dict[7], 'ro-', x, y_dict[8], 'g+-', x, y_dict[9], 'b^-', x, y_dict[10], 'c*-',)
+plt.plot(x, y_dict[10], 'c*-',)
 plt.title('The Result in Three Conditions')
 plt.xlabel('Number of contaminated nodes')
 plt.ylabel('score')
