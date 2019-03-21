@@ -101,7 +101,7 @@ def manager_start(w_n, c_n_i, xx, return_dict_1, return_dict_2, return_dict_3):
     print("开始读取数据")
     time_1 = time.time()
     # MINST数据集
-    raw_data = pd.read_csv('./data/train_binary.csv', header=0)  # 读取csv数据，并将第一行视为表头，返回DataFrame类型
+    raw_data = pd.read_csv('./data/train.csv', header=0)  # 读取csv数据，并将第一行视为表头，返回DataFrame类型
     data = raw_data.values
     X = data[::, 1::]
     y = data[::, 0]
