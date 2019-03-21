@@ -198,20 +198,44 @@ import math
 # print(W + np.random.random(size=W.shape))
 # X = np.multiply(X, X)
 # print(X)
-s = [1,2,3,4]
-print(np.mean(s))
-s=[[-2.37924865e-07, -9.22361533e-07,  1.54590466e-06 , 3.30342754e-07,
-  -1.25582287e-07,  1.07437022e-06,  1.50245369e-06, -2.37915290e-06,
-   4.21872039e-07,  1.02440084e-06,  1.02669063e-06, -7.59271687e-07,
-   5.79812344e-07, -1.30003439e-06, -1.79078246e-06, -2.34072845e-06,
-   7.23741317e-07, -7.50401645e-07, -6.18869207e-09,  1.32803293e-07]]
-# [[ 4.22996715e-07 -4.52161725e-07 -6.98397739e-07 -1.82540161e-06
-#    1.40174140e-06  8.61218066e-07  2.83793313e-07 -2.01130053e-06
-#    2.26545071e-06  8.93239718e-07  5.84922699e-07 -2.90475039e-07
-#   -2.81007243e-06 -6.81389549e-07 -1.74818986e-06 -1.45514558e-06
-#    6.46925643e-07  1.35188140e-06  5.27177347e-07  6.62901123e-07]]
-print(np.max(s))
-print(np.max(s) > 0.0001)
-print(np.min(s))
-print(abs(np.min(s)) > 1e-05)
-print(0.0001 == 1e-04)
+#
+
+# import copy
+# from trans import Trans
+#
+# def poisoning(target):
+#     # pp = [random.randrange(10) for i in range(target.shape[0])]
+#     # return np.squeeze(pp)
+#     return 9 - target
+#
+#
+# def contaminate_data(d):
+#     # print(d.target.shape)
+#     # d.target = np.ones(shape=d.target.shape) - d.target
+#     # d.target = 1 - d.target
+#     # d.data = np.random.random(size=d.data.shape) * 10
+#     d.target = poisoning(d.target)
+#     d.data = d.data * d.data
+#     return d
+# client_d = []
+# X = Trans(data=np.array([[1, 2, 3]]), target=np.array([1]))
+# X1 = Trans(data=np.array([[4, 5, 6]]), target=np.array([0]))
+# client_d.append(X)
+# client_d.append(X1)
+# client_d_contaminated = copy.deepcopy(client_d)
+#
+# for i in client_d_contaminated:
+#     print('污染前：')
+#     print(i.data)
+#     print(i.target)
+#     i = contaminate_data(i)
+#     # print('污染后：')
+#     # print(i.target)
+# for i in client_d_contaminated:
+#     print('污染后：')
+#     print(i.data)
+#     print(i.target)
+# # print('污染后的数据训练结果：')
+target = np.array([[1, 2, 3],[1,2,3]])
+# pp = [random.randrange(10) for i in range(target.shape[0])]
+print(np.random.random(target.shape) * 100)

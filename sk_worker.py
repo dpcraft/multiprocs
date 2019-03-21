@@ -14,22 +14,18 @@ import numpy as np
 import logging
 import copy
 import os
+from sklearn.linear_model import LogisticRegression
+import random
+
 
 worker_num = 0
 contaminated_node_index = []
 
 
-def poisoning(X_po):
-    W_po = np.array([[-11.81854289, 0.67689115, 0.49769656, 0.27501146, 0.16297571, -1.07459496
-                      , 0.40320964, 0.06145882, -0.0334066, 0.06819986, 0.48113072, 0.81664863
-                      , 0.47775273, 0.61443478, 0.48544784, 0.15116699, 0.84786672, 0.19863598
-                      , 0.90899323, 0.33328904]])
-    b_po = [-0.11907137]
-    p = np.dot(X_po, W_po.T) + b_po
-    p[p < 0] = 0
-    p[p > 0] = 1
-    pp = p.astype(np.int)
-    return np.squeeze(pp)
+def poisoning(target):
+    # pp = [random.randrange(10) for i in range(target.shape[0])]
+    # return np.squeeze(pp)
+    return 5 - target * target
 
 
 def contaminate_data(d):
@@ -37,7 +33,8 @@ def contaminate_data(d):
     # d.target = np.ones(shape=d.target.shape) - d.target
     # d.target = 1 - d.target
     # d.data = np.random.random(size=d.data.shape) * 10
-    d.target = poisoning(d.data)
+    d.target = poisoning(d.target)
+    d.data = d.data - np.random.random(d.data.shape) * 500
     return d
 
 
@@ -50,8 +47,10 @@ def train(data_collection, node_num):
     data_no = 0
     # 计数变量
     no = 1
+    # print(data_collection)
     for i in data_collection:
-        clf = svm.LinearSVC()
+        # clf = svm.LinearSVC()
+        clf = LogisticRegression(max_iter=100, solver='saga', multi_class='multinomial')
         clf.fit(i.data, i.target)
         if no == 1:
             Wb_tmp_1 = Wb(W=clf.coef_, b=clf.intercept_)
@@ -104,6 +103,7 @@ def worker_start(w_n, c_n_i):
     # 客户端存储队列
     client_queue = queue.Queue()
     client_d = []
+
     while not task.empty():
         # print(task.qsize == task_index)
         if task.qsize() == task_index or task.qsize() == task_index + 1:
@@ -113,31 +113,33 @@ def worker_start(w_n, c_n_i):
             # print(X.target)
 
     # 创建一个数据副本用来污染
-    client_d_contaminated = copy.deepcopy((client_d))
+    client_d_contaminated = copy.deepcopy(client_d)
 
-    Wb1 = Wb([[]], [])
-    Wb2 = Wb([[]], [])
-    Wb1_contaminated = Wb([[]], [])
-    Wb2_contaminated = Wb([[]], [])
+    # Wb1 = Wb([[]], [])
+    # Wb2 = Wb([[]], [])
+    # Wb1_contaminated = Wb([[]], [])
+    # Wb2_contaminated = Wb([[]], [])
 
     # print('未污染的数据训练结果：')
     Wb1, Wb2 = train(client_d, node_num)
-    # print('*' * 50)
+    print('*' * 50)
     # 这一段是污染的数据训练
-    # if node_num in contaminated_node_index:
-    #     # print('污染数据')
-    #     for i in client_d_contaminated:
-    #         # print('污染前：')
-    #         # print(i.target)
-    #         i = contaminate_data(i)
-    #         # print('污染后：')
-    #         # print(i.target)
-    #
-    #     # print('污染后的数据训练结果：')
-    #     Wb1_contaminated, Wb2_contaminated = train(client_d_contaminated, node_num)
-    # else:
-    #     Wb1_contaminated = Wb1
-    #     Wb2_contaminated = Wb2
+    if node_num in contaminated_node_index:
+        # print('污染数据')
+        for i in client_d_contaminated:
+            # print('污染前：')
+            # print(i.target)
+            i = contaminate_data(i)
+            # print('污染后：')
+            # print(i.target)
+        # for i in client_d_contaminated:
+        #     print('污染后：')
+        #     print(i.target)
+        # print('污染后的数据训练结果：')
+        Wb1_contaminated, Wb2_contaminated = train(client_d_contaminated, node_num)
+    else:
+        Wb1_contaminated = Wb1
+        Wb2_contaminated = Wb2
 
 
 

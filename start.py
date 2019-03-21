@@ -13,8 +13,8 @@ import random
 import matplotlib.pyplot as plt
 
 
-# x = range(51)
-x = range(10, 11)
+# 污染节点个数范围
+x = range(0, 21)
 y_1 = []
 y_2 = []
 y_3 = []
@@ -29,7 +29,7 @@ for xi in x:
     return_dict_3 = manager.dict()
     # contaminated_num = xi
     # 实验次数求平均
-    for i in range(2):
+    for i in range(10):
         worker_num = 20
         contaminated_num = xi
         indexList = range(1, worker_num + 1)
@@ -41,7 +41,7 @@ for xi in x:
                                                            return_dict_1, return_dict_2, return_dict_3))
         p.start()
         print('*' * 50)
-        time.sleep(6)
+        time.sleep(10)
         workers = []
         for j in range(worker_num):
             # print('worker %d is starting' % (i + 1))
@@ -59,7 +59,7 @@ for xi in x:
     # print(return_dict_2.values())
     # print(return_dict_3.values())
     y_1.append(np.mean(return_dict_1.values()))
-    # y_2.append(np.mean(return_dict_2.values()))
+    y_2.append(np.mean(return_dict_2.values()))
     # print('分布式训练平均正确率:')
     # print(np.mean(return_dict_1.values()))
     # print('单节点节点污染后分布式训练平均正确率：')
@@ -68,7 +68,7 @@ for xi in x:
     # print(np.mean(return_dict_3.values()))
 
 print('分布式训练正确率：', y_1)
-# print('单节点节点污染后分布式训练正确率：', y_2)
+print('单节点节点污染后分布式训练正确率：', y_2)
 
 # l1 = plt.plot(x, y_1, 'r--', label='Distributed pollution free')
 # l2 = plt.plot(x, y_2, 'g--', label='Distributed no backup')

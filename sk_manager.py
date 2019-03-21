@@ -9,8 +9,12 @@ from sklearn.model_selection import train_test_split
 from trans import Trans
 import pandas as pd
 import time
+from sklearn.metrics import accuracy_score
+from sklearn.linear_model import LogisticRegression
 # from config import worker_num
 # from config import contaminated_node_index
+
+
 worker_num = 20
 contaminated_node_index = []
 
@@ -114,6 +118,8 @@ def manager_start(w_n, c_n_i, xx, return_dict_1, return_dict_2, return_dict_3):
     tmp = generate_queue(X_train, y_train, worker_num)
     while not tmp.empty():
         task.put(tmp.get())
+    print("分配数据完成")
+
     # 从result队列读取结果:
     # print('Try get results...')
     result_W1 = []
@@ -167,31 +173,35 @@ def manager_start(w_n, c_n_i, xx, return_dict_1, return_dict_2, return_dict_3):
     # print('*' * 20)
     l = []
     l.append(b_)
-    clf = svm.LinearSVC()
-    clf.coef_ = W_[np.newaxis, :]
-    clf.intercept_ = np.array(l)
+    clf = LogisticRegression(max_iter=100, solver='saga', multi_class='multinomial')
+    # clf.coef_ = W_[np.newaxis, :]
+    # clf.intercept_ = np.array(l)
+    clf.coef_ = W_
+    clf.intercept_ = l
+    clf.classes_ = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
     print('参数W')
     print(clf.coef_)
     print('参数b')
     print(clf.intercept_)
-
-    clf.classes_ = np.array([0, 1])
-    score1 = clf.score(X_test, y_test)
+    print(X_test.shape)
+    test_predict = clf.predict(X_test)
+    score1 = accuracy_score(y_test, test_predict)
     print("分布式训练正确率：")
     print(score1)
 
 
-    # contaminated_W_2 = get_mean(contaminated_result_W2)
-    # contaminated_b_2 = get_mean(contaminated_result_b2)
-    # contaminated_l2 = []
-    # contaminated_l2.append(contaminated_b_2)
-    # clf4 = svm.LinearSVC()
-    # clf4.coef_ = contaminated_W_2[np.newaxis, :]
-    # clf4.intercept_ = np.array(contaminated_l2)
-    # clf4.classes_ = np.array([0, 1])
-    # score2 = clf4.score(X_test, y_test)
-    # print("单节点节点污染后分布式训练正确率：")
-    # print(score2)
+    contaminated_W_2 = get_mean(contaminated_result_W2)
+    contaminated_b_2 = get_mean(contaminated_result_b2)
+    contaminated_l2 = []
+    contaminated_l2.append(contaminated_b_2)
+    clf4 = LogisticRegression(max_iter=100, solver='saga', multi_class='multinomial')
+    clf4.coef_ = contaminated_W_2
+    clf4.intercept_ = contaminated_l2
+    clf4.classes_ = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+    test_predict2 = clf4.predict(X_test)
+    score2 = accuracy_score(y_test, test_predict2)
+    print("单节点节点污染后分布式训练正确率：")
+    print(score2)
     #
     # clf2 = svm.LinearSVC()
     # clf2.fit(X_train, y_train)
@@ -201,7 +211,7 @@ def manager_start(w_n, c_n_i, xx, return_dict_1, return_dict_2, return_dict_3):
 
 
     return_dict_1[xx] = score1
-    # return_dict_2[xx] = score2
+    return_dict_2[xx] = score2
     exit(0)
 
 

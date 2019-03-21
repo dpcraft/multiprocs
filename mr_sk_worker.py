@@ -125,12 +125,14 @@ def worker_start(w_n, c_n_i):
     if node_num in contaminated_node_index:
         # print('污染数据')
         for i in client_d_contaminated:
-            # print('污染前：')
-            # print(i.target)
+            print('污染前：')
+            print(i.target)
             i = contaminate_data(i)
             # print('污染后：')
             # print(i.target)
-
+        for i in client_d_contaminated:
+            print('污染后：')
+            print(i.target)
     # print('污染后的数据训练结果：')
     Wb1_contaminated, Wb2_contaminated = train(client_d_contaminated, node_num)
     try:
