@@ -59,7 +59,6 @@ for xi in x:
     # print(return_dict_3.values())
     y_1.append(np.mean(return_dict_1.values()))
     y_2.append(np.mean(return_dict_2.values()))
-    y_3.append(np.mean(return_dict_3.values()))
     # print('分布式训练平均正确率:')
     # print(np.mean(return_dict_1.values()))
     # print('单节点节点污染后分布式训练平均正确率：')
@@ -69,17 +68,15 @@ for xi in x:
 
 print('分布式训练正确率：', y_1)
 print('单节点节点污染后分布式训练正确率：', y_2)
-print('备份污染后分布式训练正确率：', y_3)
 
-l1 = plt.plot(x, y_1, 'r--', label='Distributed pollution free')
-l2 = plt.plot(x, y_2, 'g--', label='Distributed no backup')
-l3 = plt.plot(x, y_3, 'b--', label='Distributed backup')
-plt.plot(x, y_1, 'ro-', x, y_2, 'g+-', x, y_3, 'b^-')
-plt.title('The Result in Three Conditions')
-plt.xlabel('Number of contaminated nodes')
-plt.ylabel('score')
-plt.legend()
-plt.show()
+# l1 = plt.plot(x, y_1, 'r--', label='Distributed pollution free')
+# l2 = plt.plot(x, y_2, 'g--', label='Distributed no backup')
+# plt.plot(x, y_1, 'ro-', x, y_2, 'g+-', x, y_3, 'b^-')
+# plt.title('The Result in Three Conditions')
+# plt.xlabel('Number of contaminated nodes')
+# plt.ylabel('score')
+# plt.legend()
+# plt.show()
 os._exit(0)
 
 

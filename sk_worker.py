@@ -123,21 +123,24 @@ def worker_start(w_n, c_n_i):
     # print('未污染的数据训练结果：')
     Wb1, Wb2 = train(client_d, node_num)
     # print('*' * 50)
+    # 这一段是污染的数据训练
+    # if node_num in contaminated_node_index:
+    #     # print('污染数据')
+    #     for i in client_d_contaminated:
+    #         # print('污染前：')
+    #         # print(i.target)
+    #         i = contaminate_data(i)
+    #         # print('污染后：')
+    #         # print(i.target)
+    #
+    #     # print('污染后的数据训练结果：')
+    #     Wb1_contaminated, Wb2_contaminated = train(client_d_contaminated, node_num)
+    # else:
+    #     Wb1_contaminated = Wb1
+    #     Wb2_contaminated = Wb2
 
-    if node_num in contaminated_node_index:
-        # print('污染数据')
-        for i in client_d_contaminated:
-            # print('污染前：')
-            # print(i.target)
-            i = contaminate_data(i)
-            # print('污染后：')
-            # print(i.target)
 
-        # print('污染后的数据训练结果：')
-        Wb1_contaminated, Wb2_contaminated = train(client_d_contaminated, node_num)
-    else:
-        Wb1_contaminated = Wb1
-        Wb2_contaminated = Wb2
+
     try:
         result.put(Params(id=node_num, Wb1=Wb1, Wb2=Wb2, Wb1_contaminated=Wb1_contaminated,
                           Wb2_contaminated=Wb2_contaminated))

@@ -7,6 +7,7 @@ from sklearn import svm
 import numpy as np
 from sklearn.model_selection import train_test_split
 from trans import Trans
+import pandas as pd
 # from config import worker_num
 # from config import contaminated_node_index
 worker_num = 0
@@ -95,9 +96,11 @@ def manager_start(w_n, c_n_i, xx, return_dict_1, return_dict_2, return_dict_3):
     for i in range(worker_num):
         index.put(2 * i + 1)
 
-    r = np.load('./data/test_2_class.npz')
-    X = r['data']
-    y = r['target']
+    # MINST数据集
+    raw_data = pd.read_csv('../data/train_binary.csv', header=0)  # 读取csv数据，并将第一行视为表头，返回DataFrame类型
+    data = raw_data.values
+    X = data[::, 1::]
+    y = data[::, 0]
     # print(X.shape)
     # print(y.shape)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
@@ -160,54 +163,38 @@ def manager_start(w_n, c_n_i, xx, return_dict_1, return_dict_2, return_dict_3):
     clf = svm.LinearSVC()
     clf.coef_ = W_[np.newaxis, :]
     clf.intercept_ = np.array(l)
+    print('参数W')
+    print(clf.coef_)
+    print('参数b')
+    print(clf.intercept_)
+
     clf.classes_ = np.array([0, 1])
     score1 = clf.score(X_test, y_test)
     print("分布式训练正确率：")
     print(score1)
 
-    contaminated_W_ = get_mean(contaminated_result_W1)
-    contaminated_b_ = get_mean(contaminated_result_b1)
-    contaminated_l = []
-    contaminated_l.append(contaminated_b_)
-    clf3 = svm.LinearSVC()
-    clf3.coef_ = contaminated_W_[np.newaxis, :]
-    clf3.intercept_ = np.array(contaminated_l)
-    clf3.classes_ = np.array([0, 1])
-    score3 = clf3.score(X_test, y_test)
-    print("备份污染后分布式训练正确率：")
-    print(score3)
 
-    contaminated_W_2 = get_mean(contaminated_result_W2)
-    contaminated_b_2 = get_mean(contaminated_result_b2)
-    contaminated_l2 = []
-    contaminated_l2.append(contaminated_b_2)
-    clf4 = svm.LinearSVC()
-    clf4.coef_ = contaminated_W_2[np.newaxis, :]
-    clf4.intercept_ = np.array(contaminated_l2)
-    clf4.classes_ = np.array([0, 1])
-    score2 = clf4.score(X_test, y_test)
-    print("单节点节点污染后分布式训练正确率：")
-    print(score2)
-
-    clf2 = svm.LinearSVC()
-    clf2.fit(X_train, y_train)
-    print("单机训练正确率：")
-    print(clf2.score(X_test, y_test))
+    # contaminated_W_2 = get_mean(contaminated_result_W2)
+    # contaminated_b_2 = get_mean(contaminated_result_b2)
+    # contaminated_l2 = []
+    # contaminated_l2.append(contaminated_b_2)
+    # clf4 = svm.LinearSVC()
+    # clf4.coef_ = contaminated_W_2[np.newaxis, :]
+    # clf4.intercept_ = np.array(contaminated_l2)
+    # clf4.classes_ = np.array([0, 1])
+    # score2 = clf4.score(X_test, y_test)
+    # print("单节点节点污染后分布式训练正确率：")
+    # print(score2)
+    #
+    # clf2 = svm.LinearSVC()
+    # clf2.fit(X_train, y_train)
+    # print("单机训练正确率：")
+    # print(clf2.score(X_test, y_test))
     # print('W:', clf2.coef_, 'b: ', clf2.intercept_)
 
-    # 验证参数
-    # def check(dict):
-    #     for i in range(worker_num):
-    #         if dict[i + 1].Wb1_contaminated.W != dict[(i + 2) % worker_num].Wb1_contaminated.W:
-    #             dict.pop(i+1)
-    #             dict.pop(i+2)
-    #     return dict
-    # test()
 
     return_dict_1[xx] = score1
-    return_dict_2[xx] = score2
-    return_dict_3[xx] = score3
-
+    # return_dict_2[xx] = score2
     exit(0)
 
 

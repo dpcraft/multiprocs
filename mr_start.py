@@ -13,17 +13,19 @@ import random
 import matplotlib.pyplot as plt
 
 
+# 节点数
+worker_num_range = 4
 # 污染节点
-x = range(20)
+x = range(worker_num_range)
 y_dict = {1: [], 2: [], 3: [], 4: [], 5: [], 10:[]}
-for circle_no in range(10, 11):
+for circle_no in range(2, 3):
     for xi in x:
         manager = Manager()
         # 备份污染后分布式训练正确率：
         return_dict_3 = manager.dict()
         # contaminated_num = xi
         for i in range(10):
-            worker_num = 20
+            worker_num = 4
             contaminated_num = xi
             indexList = range(1, worker_num + 1)
             contaminated_node_index = random.sample(indexList, contaminated_num)
@@ -69,9 +71,9 @@ print(y_dict)
 # l2 = plt.plot(x, y_dict[7], 'r--', label='7')
 # l3 = plt.plot(x, y_dict[8], 'g--', label='8')
 # l4 = plt.plot(x, y_dict[9], 'b--', label='9')
-l5 = plt.plot(x, y_dict[10], 'c--', label='10')
+l5 = plt.plot(x, y_dict[2], 'c--', label='10')
 # plt.plot(x, y_dict[6], 'mx-', x, y_dict[7], 'ro-', x, y_dict[8], 'g+-', x, y_dict[9], 'b^-', x, y_dict[10], 'c*-',)
-plt.plot(x, y_dict[10], 'c*-',)
+plt.plot(x, y_dict[2], 'c*-',)
 plt.title('The Result in Three Conditions')
 plt.xlabel('Number of contaminated nodes')
 plt.ylabel('score')

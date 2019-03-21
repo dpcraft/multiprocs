@@ -87,8 +87,6 @@ def mr_check(a):
         offset_to_worker_num[offset] = workers_each_circle[i]
         offset += workers_each_circle[i]
         offsets.append(offset)
-    # print(offset_to_worker_num)
-    # print('offsets:', offsets)
     # a1是偏移量->数据编号的dict
     a1 = {}
     for ofs in offsets:
