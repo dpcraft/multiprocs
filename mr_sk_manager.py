@@ -8,6 +8,10 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from trans import Trans
 import math
+import time
+from sklearn.linear_model import LogisticRegression
+import pandas as pd
+from sklearn.metrics import accuracy_score
 import random
 # from config import worker_num
 # from config import contaminated_node_index
@@ -226,12 +230,19 @@ def manager_start(w_n, c_n_i, xx, return_dict_3, cr_n):
     for i in range(worker_num):
         index.put(2 * i + 1)
 
-    r = np.load('./data/test_2_class.npz')
-    X = r['data']
-    y = r['target']
-    # print(X.shape)
-    # print(y.shape)
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
+    print("开始读取数据")
+    time_1 = time.time()
+    # MINST数据集
+    raw_data = pd.read_csv('./data/train.csv', header=0)  # 读取csv数据，并将第一行视为表头，返回DataFrame类型
+    data = raw_data.values
+    X = data[::, 1::]
+    y = data[::, 0]
+    time_2 = time.time()
+    print("读取数据完成")
+    print("读取数据耗时%f 秒" % (time_2 - time_1))
+    print(X.shape)
+    print(y.shape)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33)
     tmp =generate_circle_queue(X_train, y_train, circle_no)
     while not tmp.empty():
         task.put(tmp.get())
@@ -257,8 +268,8 @@ def manager_start(w_n, c_n_i, xx, return_dict_3, cr_n):
     s = real_check(result_dict)
     print('理论应检查出污染编号：')
     print(s1)
-    print('实际检查出污染编号：')
-    print(s)
+    # print('实际检查出污染编号：')
+    # print(s)
     # for k, v in result_dict.items():
     for i in range(worker_num):
         v = result_dict[i + 1]
@@ -268,7 +279,7 @@ def manager_start(w_n, c_n_i, xx, return_dict_3, cr_n):
         result_W2.append(v.Wb2.W)
         result_b2.append(v.Wb2.b)
         # 备份污染后的结果
-        if (i + 1) in s:
+        if (i + 1) not in s1:
             contaminated_result_W1.append(v.Wb1_contaminated.W)
             contaminated_result_b1.append(v.Wb1_contaminated.b)
         else:
@@ -294,15 +305,30 @@ def manager_start(w_n, c_n_i, xx, return_dict_3, cr_n):
     # print("分布式训练正确率：")
     # print(score1)
 
+    W_ = get_mean(result_W1)
+    b_ = get_mean(result_b1)
+    # print('*' * 20)
+    # print('W_')
+    # print(W_)
+    # print('*' * 20)
+    # print('b_')
+    # print(b_)
+    # print('*' * 20)
+
+
+
+
     contaminated_W_ = get_mean(contaminated_result_W1)
     contaminated_b_ = get_mean(contaminated_result_b1)
     contaminated_l = []
     contaminated_l.append(contaminated_b_)
-    clf3 = svm.LinearSVC()
-    clf3.coef_ = contaminated_W_[np.newaxis, :]
-    clf3.intercept_ = np.array(contaminated_l)
-    clf3.classes_ = np.array([0, 1])
-    score3 = clf3.score(X_test, y_test)
+    clf3 = LogisticRegression(max_iter=100, solver='saga', multi_class='multinomial')
+    clf3.coef_ = contaminated_W_
+    clf3.intercept_ = contaminated_l
+    clf3.classes_ = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+    test_predict = clf3.predict(X_test)
+    score3 = accuracy_score(y_test, test_predict)
+
     print("备份污染后分布式训练正确率：")
     print(score3)
 

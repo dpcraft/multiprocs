@@ -239,3 +239,5 @@ import math
 target = np.array([[1, 2, 3],[1,2,3]])
 # pp = [random.randrange(10) for i in range(target.shape[0])]
 print(np.random.random(target.shape) * 100)
+for i in range(21):
+    print(i)
